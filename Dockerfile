@@ -16,6 +16,8 @@ FROM centos:7 AS builder
 ENV PATH /usr/share/elasticsearch/bin:$PATH
 ENV JAVA_HOME /opt/jdk-11.0.1
 
+ARG ES_VERSION
+
 RUN mkdir -p /opt/jdk-11.0.1 && curl --retry 8 -s -L https://corretto.aws/downloads/latest/amazon-corretto-8-aarch64-linux-jdk.tar.gz | tar --strip-components=1 -C /opt/jdk-11.0.1 -zxf -
 
 # Replace OpenJDK's built-in CA certificate keystore with the one from the OS
@@ -30,9 +32,9 @@ RUN groupadd -g 1000 elasticsearch && \
 
 WORKDIR /usr/share/elasticsearch
 
-RUN cd /opt && curl --retry 8 -s -L -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-6.8.21.tar.gz && cd -
+RUN cd /opt && curl --retry 8 -s -L -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${ES_VERSION}.tar.gz && cd -
 
-RUN tar zxf /opt/elasticsearch-6.8.21.tar.gz --strip-components=1
+RUN tar zxf /opt/elasticsearch-${ES_VERSION}.tar.gz --strip-components=1
 RUN mkdir -p config data logs
 RUN chmod 0775 config data logs
 COPY config/elasticsearch.yml config/log4j2.properties config/
@@ -80,7 +82,7 @@ EXPOSE 9200 9300
 LABEL org.label-schema.schema-version="1.0" \
   org.label-schema.vendor="Elastic" \
   org.label-schema.name="elasticsearch" \
-  org.label-schema.version="6.8.21" \
+  org.label-schema.version="${ES_VERSION}" \
   org.label-schema.url="https://www.elastic.co/products/elasticsearch" \
   org.label-schema.vcs-url="https://github.com/elastic/elasticsearch" \
   license="Elastic License"
